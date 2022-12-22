@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Payments{% endblock %}
+
+{% block content %}
+<h1>Payments</h1>
+
+<div class="row gap-4">
+	{% for price in prices %}
+	<div class="col card p-3" style="width: 8rem;">
+		<h4>{{price.product.name}}</h4>
+		<h5>R$ {{ price.get_display_price }}</h5>
+		<form action="{% url 'create-checkout-session' price.id %}" method="POST">
+			{% csrf_token %}
+			<button class="btn btn-success" type="submit">Checkout</button>
+		</form>
+	</div>
+	{% endfor %} 
+</div>  
+{% endblock %}
