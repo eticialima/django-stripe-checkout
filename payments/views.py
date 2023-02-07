@@ -51,61 +51,50 @@ def cancelled_view(request):
  
 @csrf_exempt
 def stripe_webhook(request):
+    endpoint_secret = 'whsec_EMYnmvp0tr7mRgUNCTJuk5z8q9cB8ikz'
     payload = request.body
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     event = None
 
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
+            payload, sig_header, endpoint_secret
         )
     except ValueError as e:
         # Invalid payload
-        return HttpResponse(status=400)
+        raise e
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
-        return HttpResponse(status=400)
+        raise e
 
-    # Handle the checkout.session.completed event
-    if event['type'] == 'checkout.session.completed':
+    # Handle the event
+    if event['type'] == 'checkout.session.async_payment_failed':
         session = event['data']['object']
-        print(session)
-        customer_email = session["customer_details"]["email"]
-        product_id = session["metadata"]["product_id"]
-
-        product = Product.objects.get(id=product_id)
-        print(product)
-        send_mail(
-            subject="Here is your product",
-            message=f"Thanks for your purchase. Here is the product you ordered. The URL is {product.url}",
-            recipient_list=[customer_email],
-            from_email="leticialimacgi@gmail.com"
-        )
-
-        # TODO - decide whether you want to send the file or the URL
-    
-    elif event["type"] == "payment_intent.succeeded":
-        intent = event['data']['object']
-
-        stripe_customer_id = intent["customer"]
+    elif event['type'] == 'checkout.session.async_payment_succeeded':
+        session = event['data']['object']
+    elif event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+    elif event['type'] == 'checkout.session.expired':
+        session = event['data']['object']
+    elif event['type'] == 'payment_intent.canceled':
+        payment_intent = event['data']['object']
+    elif event['type'] == 'payment_intent.created':
+        payment_intent = event['data']['object']
+    elif event['type'] == 'payment_intent.succeeded':
+        payment_intent = event['data']['object']
+        stripe_customer_id = payment_intent["customer"]
         stripe_customer = stripe.Customer.retrieve(stripe_customer_id)
-
         customer_email = stripe_customer['email']
-        product_id = intent["metadata"]["product_id"]
-
-        product = Product.objects.get(id=product_id)
-
-        send_mail(
-            subject="Here is your product",
-            message=f"Thanks for your purchase. Here is the product you ordered. The URL is {product.url}",
-            recipient_list=[customer_email],
-            from_email="leticialimacgi@gmail.com"
-        )
+        print(stripe_customer_id)
+        print(stripe_customer)
+        print(customer_email) 
+    # ... handle other event types
+    else:
+      print('Unhandled event type {}'.format(event['type']))
 
     return HttpResponse(status=200)
 
-
-
+ 
 
 
 ## custom payment
