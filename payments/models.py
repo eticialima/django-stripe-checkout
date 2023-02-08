@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Product(models.Model):
@@ -18,3 +19,12 @@ class Price(models.Model):
     
     def get_display_price(self):
         return "{0:.2f}".format(self.price)
+    
+    
+class CheckoutPayment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    payment_intent = models.CharField(max_length=200)
+    payment_status = models.CharField(max_length=100)
+    dt_created = models.DateField()
+    

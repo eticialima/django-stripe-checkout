@@ -3,7 +3,7 @@ from payments import models
 
 # Register your models here.
 from django.contrib import admin
-from .models import Product, Price
+from .models import Product, Price, CheckoutPayment
 
 
 class PriceInlineAdmin(admin.TabularInline):
@@ -16,3 +16,5 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Product, ProductAdmin)
+
+admin.site.register(CheckoutPayment)

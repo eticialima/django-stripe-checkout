@@ -34,7 +34,7 @@ DEBUG = os.getenv('DEBUG')
 ALLOWED_HOSTS = [
 		'localhost', 
 		'127.0.0.1',  
-        '6194-189-7-81-143.sa.ngrok.io',
+        'ba5c-189-15-231-92.sa.ngrok.io',
 ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
@@ -46,12 +46,12 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = False
 
 CORS_ALLOWED_ORIGINS = [ 
-    "https://6194-189-7-81-143.sa.ngrok.io",
+    "https://ba5c-189-15-231-92.sa.ngrok.io",
     "http://localhost:8080",
     "http://127.0.0.1:9000", 
 ]
 
-CSRF_TRUSTED_ORIGINS = ['https://6194-189-7-81-143.sa.ngrok.io', 'https://6194-189-7-81-143.sa.ngrok.io/webhooks/stripe']
+CSRF_TRUSTED_ORIGINS = ['https://ba5c-189-15-231-92.sa.ngrok.io']
 
 
 if not DEBUG:
@@ -244,6 +244,6 @@ MESSAGE_TAGS = {
 STRIPE_PUBLISHABLE_KEY = 'pk_test_51MHo2QCex4srAl3jcFFy21yMupvBPtB3BSLUeMrz8Bez762BamqnplffaPOBxX2xttsgsSfRQI1AVB9RxT3u9ghp00BtXD34xY'
 STRIPE_SECRET_KEY = 'sk_test_51MHo2QCex4srAl3jvRJMplVzQeFMNIE9mvU40TtORsdZjIgbzbHWRg43xcOHjrBvvgWbqBtvZRNH0sxgGG2vmscw00AhAwewwD'
 
-STRIPE_WEBHOOK_SECRET = 'whsec_ReZ3NpsXAlhOtul4INxHLSWvfDVynStt'
+STRIPE_WEBHOOK_SECRET = 'whsec_EMYnmvp0tr7mRgUNCTJuk5z8q9cB8ikz'
 
 # hardy-jolly-unity-finest
