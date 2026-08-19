@@ -12,15 +12,7 @@ A simple Django project with Stripe Checkout and Payment Intent payment flows.
 - Custom payment flow with Payment Intent.
 - Stripe webhook endpoint.
 - Purchase history page with unlocked product links/files.
-- Django admin panel.
-
-## Technologies
-
-- Python
-- Django
-- Bootstrap
-- Stripe
-- SQLite
+- Django admin panel. 
 
 ## Local Setup
 
@@ -93,9 +85,4 @@ To test webhooks locally, use the Stripe CLI:
 
 ```bash
 stripe listen --forward-to localhost:8000/webhooks/stripe/
-```
-
-## Notes
-
-- `.env`, SQLite database files, logs, media files and virtual environments are ignored by Git.
-- Before deploying, review `DEBUG`, `ALLOWED_HOSTS`, Stripe keys and security settings.
+``` 
