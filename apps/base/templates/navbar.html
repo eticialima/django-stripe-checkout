@@ -7,18 +7,18 @@
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <a class="navbar-brand" href="#">Myapp</a>
+        <a class="navbar-brand" href="/">Stripe Checkout</a>
 
         <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
 
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/">Inicio</a>
+                    <a class="nav-link active" aria-current="page" href="/">Home</a>
                 </li> 
 
                 <li class="nav-item">
-                    <a class="nav-link disabled">Desativado</a>
+                    <a class="nav-link" href="{% url 'custom-payment' %}">Custom payment</a>
                 </li>
 
             </ul>
@@ -28,10 +28,10 @@
                     <span class="nav-text">
                         {{user.username}}
                     </span>
-                    <a class="btn btn-outline-danger" href="{% url 'logout' %}">Sair</a>
+                    <a class="btn btn-outline-danger" href="{% url 'logout' %}">Logout</a>
                 {% else %}
-                    <a class="btn btn-outline-primary" href="{% url 'login' %}">Entrar</a>
-                    <a class="btn btn-success" href="{% url 'register' %}">Registrar</a>
+                    <a class="btn btn-outline-primary" href="{% url 'login' %}">Login</a>
+                    <a class="btn btn-success" href="{% url 'register' %}">Register</a>
                 {% endif %} 
 
             </div>

@@ -11,7 +11,15 @@ A simple Django project with Stripe Checkout and Payment Intent payment flows.
 - Stripe Checkout integration.
 - Custom payment flow with Payment Intent.
 - Stripe webhook endpoint.
-- Django admin panel.  
+- Django admin panel.
+
+## Technologies
+
+- Python
+- Django
+- Bootstrap
+- Stripe
+- SQLite
 
 ## Local Setup
 
@@ -28,7 +36,13 @@ Install the dependencies:
 pip install -r requirements.txt
 ```
 
-Create a `.env` file in the project root rename env_example to .env 
+Create a `.env` file from the example:
+
+```bash
+cp .env.example .env
+```
+
+Then update `.env` with your local settings and Stripe test keys.
 
 Run the migrations:
 
@@ -57,16 +71,21 @@ Open:
 
 ## Stripe
 
-Configure the Stripe keys in `core/settings.py` or adapt the project to read them from `.env`:
+Configure the Stripe keys in `.env`:
 
-```python
-STRIPE_PUBLISHABLE_KEY = "pk_test_..."
-STRIPE_SECRET_KEY = "sk_test_..."
-STRIPE_WEBHOOK_SECRET = "whsec_..."
+```env
+STRIPE_PUBLISHABLE_KEY=pk_test_your_key
+STRIPE_SECRET_KEY=sk_test_your_key
+STRIPE_WEBHOOK_SECRET=whsec_your_secret
 ```
 
 To test webhooks locally, use the Stripe CLI:
 
 ```bash
 stripe listen --forward-to localhost:8000/webhooks/stripe/
-``` 
+```
+
+## Notes
+
+- `.env`, SQLite database files, logs, media files and virtual environments are ignored by Git.
+- Before deploying, review `DEBUG`, `ALLOWED_HOSTS`, Stripe keys and security settings.

@@ -16,13 +16,14 @@ ENV/
 info.log
 db.sqlite3
 db.sqlite3-journal
-media/
-staticfiles/
-static/
+/media/
+/staticfiles/
+/static/
 
 # Environment variables and secrets
 .env
 .env.*
+!.env.example
 _env
 
 # Test and coverage output

@@ -13,7 +13,7 @@ def register(request):
                 user = form.save(commit=False)
                 user.is_valid = False
                 user.save()
-                messages.success(request, 'Registrado. Agora faça o login para começar!')
+                messages.success(request, 'Registration complete. Log in to get started.')
                 return redirect('index')
 
             else:

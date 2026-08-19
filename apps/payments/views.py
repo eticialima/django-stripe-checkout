@@ -5,6 +5,7 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from django.http import JsonResponse
 from .models import *
+from django.contrib.auth.decorators import login_required
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
@@ -17,29 +18,33 @@ def home(request):
 
 
 
+@login_required
 def create_checkout_session(request, id):
     domain_url = 'http://localhost:8000/'
     stripe.api_key = settings.STRIPE_SECRET_KEY
     
     if request.method == 'POST':
         price = Price.objects.get(id=id)
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[
+        checkout_session_data = {
+            'payment_method_types': ['card'],
+            'line_items': [
                 {
                     'price': price.stripe_price_id,
                     'quantity': 1,
                 },
             ],
-            metadata={
+            'metadata': {
                 "product_id": price.product.id,
                 "user_id": request.user.id,
             },
-            mode='payment',
-            success_url=domain_url + 'success/',
-            cancel_url=domain_url + 'cancel/',
-            customer_email='leticiawebhook1@gamil.com',
-        )
+            'mode': 'payment',
+            'success_url': domain_url + 'success/',
+            'cancel_url': domain_url + 'cancelled/',
+        }
+        if request.user.is_authenticated and request.user.email:
+            checkout_session_data['customer_email'] = request.user.email
+
+        checkout_session = stripe.checkout.Session.create(**checkout_session_data)
         return redirect(checkout_session.url)
         
         
@@ -137,6 +142,7 @@ def stripe_webhook(request):
 ## custom payment
 def stripe_intent_view(request, id):
     try:
+        stripe.api_key = settings.STRIPE_SECRET_KEY
         req_json = json.loads(request.body)
         customer = stripe.Customer.create(email=req_json['email'])
         price = Price.objects.get(id=id)

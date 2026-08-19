@@ -6,7 +6,7 @@ class Product(models.Model):
     name = models.CharField(max_length=100)
     stripe_product_id = models.CharField(max_length=100)
     file = models.FileField(upload_to="product_files/", blank=True, null=True)
-    url = models.URLField(null=True)
+    url = models.URLField(blank=True, null=True)
     
     def __str__(self):
         return self.name
@@ -18,7 +18,10 @@ class Price(models.Model):
     price = models.IntegerField(default=0)  # cents
     
     def get_display_price(self):
-        return "{0:.2f}".format(self.price)
+        return "{0:.2f}".format(self.price / 100)
+
+    def __str__(self):
+        return f"{self.product.name} - $ {self.get_display_price()}"
     
     
 class CheckoutPayment(models.Model):
@@ -27,4 +30,7 @@ class CheckoutPayment(models.Model):
     payment_intent = models.CharField(max_length=200)
     payment_status = models.CharField(max_length=100)
     dt_created = models.DateField()
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name} - {self.payment_status}"
     

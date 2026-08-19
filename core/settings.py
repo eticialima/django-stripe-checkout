@@ -26,6 +26,13 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 sys.path.insert(0, str(os.path.join(BASE_DIR, 'apps'))) 
 
 
+def env_bool(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.lower() in ("1", "true", "yes", "on")
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -33,7 +40,7 @@ sys.path.insert(0, str(os.path.join(BASE_DIR, 'apps')))
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG')
+DEBUG = env_bool('DEBUG', True)
 
 ALLOWED_HOSTS = [
 		'localhost', 
@@ -228,7 +235,7 @@ EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD') 
 EMAIL_PORT = os.getenv('EMAIL_PORT') 
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS') 
+EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', True)
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
@@ -244,11 +251,6 @@ MESSAGE_TAGS = {
 	constants.INFO: 'alert-info',
 }
 
-## API de TESTE
-STRIPE_PUBLISHABLE_KEY = 'STRIPE_PUBLISHABLE_KEY'
-
-STRIPE_SECRET_KEY = 'STRIPE_SECRET_KEY'
-
-STRIPE_WEBHOOK_SECRET = 'whsec_EMYnmvp0tr7mRgUNCTJuk5z8q9cB8ikz'
-
-# hardy-jolly-unity-finest
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')

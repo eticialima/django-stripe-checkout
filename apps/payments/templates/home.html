@@ -4,16 +4,32 @@
 
 {% block content %} 
 
-<div class="row gap-4">
-	{% for price in prices %}
-	<div class="col card p-3" style="width: 8rem;">
-		<h4>{{price.product.name}}</h4>
-		<h5>R$ {{ price.get_display_price }}</h5>
-		<form action="{% url 'create-checkout-session' price.id %}" method="POST">
-			{% csrf_token %}
-			<button class="btn btn-success" type="submit">Checkout</button>
-		</form>
+<div class="d-flex align-items-center justify-content-between mb-4">
+	<div>
+		<h1 class="h3 mb-1">Products</h1>
+		<p class="text-muted mb-0">Choose a product and continue to Stripe Checkout.</p>
 	</div>
-	{% endfor %} 
+	<a class="btn btn-outline-primary" href="{% url 'custom-payment' %}">Custom payment</a>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+	{% for price in prices %}
+	<div class="col">
+		<div class="card h-100">
+			<div class="card-body d-flex flex-column">
+				<h2 class="h5 card-title">{{ price.product.name }}</h2>
+				<p class="card-text text-muted mb-4">$ {{ price.get_display_price }}</p>
+				<form action="{% url 'create-checkout-session' price.id %}" method="POST" class="mt-auto">
+					{% csrf_token %}
+					<button class="btn btn-success w-100" type="submit">Checkout</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	{% empty %}
+	<div class="col">
+		<div class="alert alert-info mb-0">No products available yet.</div>
+	</div>
+	{% endfor %}
 </div>  
 {% endblock %}
