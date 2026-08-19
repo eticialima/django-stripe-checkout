@@ -1,17 +1,22 @@
-import datetime
 import json
 import stripe
-from django.shortcuts import render, redirect
-from django.conf import settings
-from django.http import JsonResponse
-from .models import *
 from django.contrib.auth.decorators import login_required
-
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
-from django.core.mail import send_mail
+from django.views.decorators.http import require_POST
+from .models import CheckoutPayment, Price, Product
 
-# Create your views here.
+
+PAID_STATUSES = ("paid", "succeeded")
+
+
+def stripe_created_date(timestamp):
+    return timezone.datetime.fromtimestamp(timestamp, tz=timezone.get_current_timezone()).date()
+
 def home(request):
     prices = Price.objects.all()
     return render(request, 'home.html', {'prices':prices})
@@ -19,33 +24,33 @@ def home(request):
 
 
 @login_required
+@require_POST
 def create_checkout_session(request, id):
     domain_url = 'http://localhost:8000/'
     stripe.api_key = settings.STRIPE_SECRET_KEY
     
-    if request.method == 'POST':
-        price = Price.objects.get(id=id)
-        checkout_session_data = {
-            'payment_method_types': ['card'],
-            'line_items': [
-                {
-                    'price': price.stripe_price_id,
-                    'quantity': 1,
-                },
-            ],
-            'metadata': {
-                "product_id": price.product.id,
-                "user_id": request.user.id,
+    price = get_object_or_404(Price, id=id)
+    checkout_session_data = {
+        'payment_method_types': ['card'],
+        'line_items': [
+            {
+                'price': price.stripe_price_id,
+                'quantity': 1,
             },
-            'mode': 'payment',
-            'success_url': domain_url + 'success/',
-            'cancel_url': domain_url + 'cancelled/',
-        }
-        if request.user.is_authenticated and request.user.email:
-            checkout_session_data['customer_email'] = request.user.email
+        ],
+        'metadata': {
+            "product_id": price.product.id,
+            "user_id": request.user.id,
+        },
+        'mode': 'payment',
+        'success_url': domain_url + 'success/',
+        'cancel_url': domain_url + 'cancelled/',
+    }
+    if request.user.is_authenticated and request.user.email:
+        checkout_session_data['customer_email'] = request.user.email
 
-        checkout_session = stripe.checkout.Session.create(**checkout_session_data)
-        return redirect(checkout_session.url)
+    checkout_session = stripe.checkout.Session.create(**checkout_session_data)
+    return redirect(checkout_session.url)
         
         
         
@@ -55,6 +60,15 @@ def success_view(request):
 
 def cancelled_view(request):
     return render(request, 'cancelled.html')
+
+
+@login_required
+def purchases_view(request):
+    payments = CheckoutPayment.objects.filter(
+        user=request.user,
+        payment_status__in=PAID_STATUSES,
+    ).select_related('product').order_by('-dt_created')
+    return render(request, 'purchases.html', {'payments': payments})
  
  
 @csrf_exempt
@@ -74,84 +88,73 @@ def stripe_webhook(request):
         # Invalid signature
         raise e
 
-    # Checkout (Envia as informações)
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
         user_id = session["metadata"]["user_id"]
         product_id = session["metadata"]["product_id"]
-        payment_intent = session["payment_intent"] # Codigo transição
-        payment_status = session["payment_status"] # Status "Pago" mas não confirmado na plataforma
-        dt_created = session["created"] # Data de Registro
-        
-        print(user_id)  
-        print(product_id) 
-        print(payment_intent)
-        print(payment_status)
-        print(dt_created)  
-        
-        ## TODO: Criar função para registrar log para checkout.
-        create = CheckoutPayment.objects.create(
-            user=User.objects.get(id=user_id),
-            product=Product.objects.get(id=product_id),
+        payment_intent = session["payment_intent"]
+
+        CheckoutPayment.objects.update_or_create(
             payment_intent=payment_intent,
-            payment_status=payment_status,
-            dt_created=datetime.datetime.fromtimestamp(dt_created),
+            defaults={
+                "user": User.objects.get(id=user_id),
+                "product": Product.objects.get(id=product_id),
+                "payment_status": session["payment_status"],
+                "dt_created": stripe_created_date(session["created"]),
+            },
         )
-        create.save()
-        print("save!!!")
         
-    # Criação bem-sucedida de um PaymentIntent.
     elif event['type'] == 'payment_intent.created':
-        payment_intent = event['data']['object']
-        payment_intent_id = payment_intent['id']
-        dt_created = payment_intent['created']
-        print(payment_intent)
+        pass
         
-    # Após o sucesso do processamento de um PaymentIntent
     elif event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']
         payment_intent_id = payment_intent['id']
-        dt_created = payment_intent['created']
-        print('Succeeded: ', payment_intent_id) # ex: pi_3MZ0rGCex4srAl3j18kmrdHu
-        
-        # Retorna o pagamento do cliente
-        # TODO: Criar função para atualizar o status do pagamento e liberar acesso para cliente
-        check = CheckoutPayment.objects.get(payment_intent=payment_intent_id)
+        check = CheckoutPayment.objects.filter(payment_intent=payment_intent_id).first()
+
         if check:
             check.payment_status = "succeeded"
-            check.dt_created = datetime.datetime.fromtimestamp(dt_created)
-            check.save()
-        
-        
-    # Se der algum erro no pagamento
+            check.dt_created = stripe_created_date(payment_intent['created'])
+            check.save(update_fields=["payment_status", "dt_created"])
+        else:
+            metadata = payment_intent.get("metadata", {})
+            user_id = metadata.get("user_id")
+            product_id = metadata.get("product_id")
+
+            if user_id and product_id:
+                CheckoutPayment.objects.create(
+                    user=User.objects.get(id=user_id),
+                    product=Product.objects.get(id=product_id),
+                    payment_intent=payment_intent_id,
+                    payment_status="succeeded",
+                    dt_created=stripe_created_date(payment_intent['created']),
+                )
+
     elif event['type'] == "payment_intent.payment_failed":
         intent = event['data']['object']
-        error_message = intent['last_payment_error']['message'] if intent.get('last_payment_error') else None
-        print("Failed: ", intent['id']), error_message
-        # Notify the customer that payment failed
-        
-    # ... handle other event types
-    else:
-        print('Unhandled event type {}'.format(event['type']))
+        CheckoutPayment.objects.filter(payment_intent=intent['id']).update(payment_status="failed")
 
     return HttpResponse(status=200)
 
 
 
 
-## custom payment
+@login_required
+@require_POST
 def stripe_intent_view(request, id):
     try:
         stripe.api_key = settings.STRIPE_SECRET_KEY
         req_json = json.loads(request.body)
         customer = stripe.Customer.create(email=req_json['email'])
-        price = Price.objects.get(id=id)
+        price = get_object_or_404(Price, id=id)
         intent = stripe.PaymentIntent.create(
             amount=price.price,
             currency='usd',
             customer=customer['id'],
             metadata={
-                "price_id": price.id
+                "price_id": price.id,
+                "product_id": price.product.id,
+                "user_id": request.user.id,
             }
         )
         return JsonResponse({
@@ -162,7 +165,7 @@ def stripe_intent_view(request, id):
 
 
 
- 
+@login_required
 def custom_payment_view(request):
     prices = Price.objects.all()
     context = {

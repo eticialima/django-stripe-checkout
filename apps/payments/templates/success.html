@@ -3,7 +3,10 @@
 {% block title %}Payments{% endblock %}
 
 {% block content %}
-<h1>Payments</h1>
-<p>Your payment succeeded.</p>
+<div class="alert alert-success">
+    <h1 class="h4 alert-heading">Payment received</h1>
+    <p class="mb-3">Your payment was completed successfully.</p>
+    <a class="btn btn-success" href="{% url 'purchases' %}">View my purchases</a>
+</div>
 
 {% endblock %}

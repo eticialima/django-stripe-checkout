@@ -8,6 +8,7 @@
         <h1 class="h3 mb-1">Custom payment</h1>
         <p class="text-muted mb-4">Pay securely with Stripe Elements.</p>
 
+        {% if prices %}
         <form id="payment-form" class="card">
             <div class="card-body">
                 {% csrf_token %}
@@ -38,16 +39,20 @@
                 </button>
 
                 <div class="alert alert-success mt-3 mb-0 d-none result-message">
-                    Payment succeeded. View it in your
-                    <a href="https://dashboard.stripe.com" target="_blank" rel="noreferrer">Stripe dashboard</a>.
+                    Payment succeeded.
+                    <a href="{% url 'purchases' %}">View my purchases</a>.
                 </div>
             </div>
         </form>
+        {% else %}
+        <div class="alert alert-info mb-0">No products available yet.</div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
+{% if prices %}
 <script src="https://js.stripe.com/v3/"></script>
 <script>
     var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -130,12 +135,6 @@
 
     var orderComplete = function (paymentIntentId) {
         loading(false);
-        document
-            .querySelector(".result-message a")
-            .setAttribute(
-                "href",
-                "https://dashboard.stripe.com/test/payments/" + paymentIntentId
-            );
         document.querySelector(".result-message").classList.remove("d-none");
         submitButton.disabled = true;
     };
@@ -161,4 +160,5 @@
         }
     };
 </script>
+{% endif %}
 {% endblock scripts %}

@@ -7,6 +7,7 @@ urlpatterns = [
 
     path('success/', views.success_view, name='success'),
     path('cancelled/', views.cancelled_view, name='cancelled'),  
+    path('purchases/', views.purchases_view, name='purchases'),
     
     path('webhooks/stripe/', views.stripe_webhook, name='stripe-webhook'),
 

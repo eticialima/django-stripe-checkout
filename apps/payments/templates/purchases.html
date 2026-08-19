@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}My purchases{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">My purchases</h1>
+        <p class="text-muted mb-0">Products unlocked after successful Stripe payments.</p>
+    </div>
+    <a class="btn btn-outline-primary" href="{% url 'home' %}">Back to products</a>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for payment in payments %}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                    <div>
+                        <h2 class="h5 card-title mb-1">{{ payment.product.name }}</h2>
+                        <p class="text-muted mb-0">Purchased on {{ payment.dt_created }}</p>
+                    </div>
+                    <span class="badge text-bg-success">{{ payment.payment_status }}</span>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    {% if payment.product.url %}
+                    <a class="btn btn-success" href="{{ payment.product.url }}" target="_blank" rel="noreferrer">Open link</a>
+                    {% endif %}
+
+                    {% if payment.product.file %}
+                    <a class="btn btn-outline-success" href="{{ payment.product.file.url }}" download>Download file</a>
+                    {% endif %}
+
+                    {% if not payment.product.url and not payment.product.file %}
+                    <span class="text-muted">No file or link was added to this product yet.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col">
+        <div class="alert alert-info mb-0">
+            You do not have paid purchases yet.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

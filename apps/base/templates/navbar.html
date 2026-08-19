@@ -21,6 +21,12 @@
                     <a class="nav-link" href="{% url 'custom-payment' %}">Custom payment</a>
                 </li>
 
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'purchases' %}">My purchases</a>
+                </li>
+                {% endif %}
+
             </ul>
 
             <div class="d-flex gap-3 align-items-center">
