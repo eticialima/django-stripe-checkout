@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import os
+import sys
 from dotenv import load_dotenv
 from corsheaders.defaults import default_headers
 
@@ -20,7 +21,10 @@ TEMPLATE_DIR = os.path.join(BASE_DIR,'templates')
 
 STATIC_DIR=os.path.join(BASE_DIR,'static')
 
-load_dotenv(os.path.join(BASE_DIR, ".env"))
+load_dotenv(os.path.join(BASE_DIR, ".env")) 
+
+sys.path.insert(0, str(os.path.join(BASE_DIR, 'apps'))) 
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
@@ -63,7 +67,7 @@ if not DEBUG:
 # Application definition
 
 INSTALLED_APPS = [
-    'accounts',
+    'apps.accounts',
     
     'django.contrib.admin',
     'django.contrib.auth',
@@ -73,9 +77,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     'corsheaders', 
-    'base',
-    'myapp',
-    'payments',
+    'apps.base',
+    'apps.myapp',
+    'apps.payments',
 ]
 
 MIDDLEWARE = [
@@ -242,6 +246,7 @@ MESSAGE_TAGS = {
 
 ## API de TESTE
 STRIPE_PUBLISHABLE_KEY = 'STRIPE_PUBLISHABLE_KEY'
+
 STRIPE_SECRET_KEY = 'STRIPE_SECRET_KEY'
 
 STRIPE_WEBHOOK_SECRET = 'whsec_EMYnmvp0tr7mRgUNCTJuk5z8q9cB8ikz'
